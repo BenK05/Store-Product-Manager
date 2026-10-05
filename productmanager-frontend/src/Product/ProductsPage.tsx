@@ -1,50 +1,44 @@
 import {
     Box,
-    Button, Checkbox,
-    Paper,
-    Table, TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
+    Button,
     TextField,
-    Typography
 } from "@mui/material";
-import StateCard from "./StateCard.tsx";
+import {useEffect, useState} from "react";
+import {getAllProducts} from "../api/apiRequest.tsx";
+import type {Product} from "../types/types.tsx";
+import ProductHeader from "./ProductHeader.tsx";
+import ProductStats from "./ProductStats.tsx";
+import ProductTable from "./ProductTable.tsx";
+import NewProductDialog from "./NewProductDialog.tsx";
 
 function ProductsPage() {
+    const [products, setProducts] = useState<Product[]>([]);
+    const [openNewProduct, setOpenNewProduct] = useState(false);
+
+
+
+
+
+
+    useEffect(() => {
+        const loadProducts = async () => {
+            try{
+                const request = await getAllProducts();
+                setProducts(request.data);
+                console.log(request.data);
+                console.log(request.status);
+            }catch (err){
+                console.log(err);
+            }
+        };
+
+        loadProducts();
+    }, []);
+
     return (
         <>
-            <Box
-                sx={{
-                    p: 2,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center"
-                }}>
-                <Box>
-                    <Typography variant="h4">Products</Typography>
-                    <Typography color="text.secondary">Manage inventory, pricing and availability</Typography>
-                </Box>
-                <Box sx={{display: "flex", gap: 2}}>
-                    <Button variant="outlined">
-                        Export
-                    </Button>
-                    <Button variant="contained">
-                        Add product
-                    </Button>
-                </Box>
-            </Box>
-            <Box sx={{
-                p: 2,
-                display: "flex",
-                gap: 2
-            }}>
-                <StateCard title="Total Products" value="1,432" percentage="+3%"/>
-                <StateCard title="Total Revenue" value="$84,320" percentage="+12.5%"/>
-                <StateCard title="Total Orders" value="142" percentage="-1.4%"/>
-                <StateCard title="Customers" value="3,240" percentage="+2.1%"/>
-            </Box>
+            <ProductHeader onAddProduct={()=>setOpenNewProduct(true)}/>
+            <ProductStats/>
             <Box sx={{
                 p: 2,
                 display: "flex",
@@ -64,21 +58,8 @@ function ProductsPage() {
             </Box>
 
             <Box sx={{m:2}}>
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell padding="checkbox"><Checkbox/></TableCell>
-                                <TableCell align="left">ID</TableCell>
-                                <TableCell align="right">Name</TableCell>
-                                <TableCell align="right">Price</TableCell>
-                                <TableCell align="right">Stock</TableCell>
-                                <TableCell align="center" >Status</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody></TableBody>
-                    </Table>
-                </TableContainer>
+                <ProductTable products={products}/>
+               <NewProductDialog open={openNewProduct} onClose={()=>setOpenNewProduct(false)}/>
             </Box>
         </>
 
