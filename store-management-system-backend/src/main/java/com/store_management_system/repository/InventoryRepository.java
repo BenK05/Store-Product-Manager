@@ -24,5 +24,5 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
         JOIN pv.product p
         GROUP BY p.id, p.name, p.state
     """)
-    List<ProductDTO> findAllProductWithQuintity();
+    List<ProductDTO> findAllProductWithQuantity();
 }

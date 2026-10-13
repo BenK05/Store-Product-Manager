@@ -12,8 +12,11 @@ import {
     TextField, Typography
 } from "@mui/material";
 import NewVariantDialog from "./NewVariantDialog.tsx";
-import {useState} from "react";
-import type {Variant} from "../types/types.tsx";
+import {useEffect, useState} from "react";
+import type {Brand, Category, Variant} from "../types/types.tsx";
+import {getAllBrands, getAllCategorys} from "../api/apiRequest.tsx";
+import BrandDialog from "./BrandDialog.tsx";
+import CategoryDialog from "./CategoryDialog.tsx";
 
 type props ={
     open:boolean,
@@ -21,11 +24,49 @@ type props ={
 }
 
 function NewProductDialog({open,onClose}:props) {
+
+    const [allBrands, setAllBrands] = useState<Brand[]>([]);
+    const [allCategory, setAllCategory] = useState<Category[]>([]);
+
+    const loadBrands = async () => {
+        const response = await getAllBrands();
+        setAllBrands(response.data);
+    };
+
+    const loadCategories = async () => {
+        const response = await getAllCategorys();
+        setAllCategory(response.data);
+    };
+
+    useEffect(() => {
+        const loadInitialData = async () => {
+            await Promise.all([
+                loadBrands(),
+                loadCategories()
+            ]);
+        };
+
+        void loadInitialData();
+    }, []);
+
+
     const [productName, setProductName] = useState("");
-    const[brandId, setBrandId] = useState<number|null>();
-    const [categoryId, setCategoryId] = useState<number|null>();
+    const[brandId, setBrandId] = useState("");
+    const [categoryId, setCategoryId] = useState("");
     const [variant,setVariant]= useState<Variant[]>([]);
+
+    const addProduct =() =>{
+        console.log("Adding new product...")
+        onClose()
+    }
+
     const[variantDialog, setVariantDialog] = useState(false);
+
+    const [brandDialog, setBrandDialog] = useState(false);
+
+    const [categoryDialog, setCategoryDialog] = useState(false);
+
+
     return (
         <Dialog
             open={open}
@@ -45,26 +86,31 @@ function NewProductDialog({open,onClose}:props) {
                 />
 
                 <Stack direction="row" spacing={2} sx={{mt:2}}>
-                    <FormControl sx={{width:"75%"}} margin="normal">
-                        <InputLabel id="brand-label">
-                            Brand
-                        </InputLabel>
+                    <FormControl sx={{ width: "75%" }} margin="normal">
+                        <InputLabel id="brand-label">Brand</InputLabel>
 
                         <Select
                             labelId="brand-label"
                             value={brandId}
                             label="Brand"
-                            onChange={(e) =>
-                                setBrandId(Number(e.target.value))
-                            }
+                            onChange={(e) => setBrandId(e.target.value)}
                         >
-                            <MenuItem value={10}>Nike</MenuItem>
-                            <MenuItem value={20}>Adidas</MenuItem>
-                            <MenuItem value={30}>Puma</MenuItem>
+                            <MenuItem value="">
+                                <em>Select Brand</em>
+                            </MenuItem>
+
+                            {allBrands.map((brand: Brand) => (
+                                <MenuItem
+                                    key={brand.id}
+                                    value={String(brand.id)}
+                                >
+                                    {brand.name}
+                                </MenuItem>
+                            ))}
                         </Select>
                     </FormControl>
 
-                    <Button variant="outlined" sx={{width:"25%"}}>
+                    <Button variant="outlined" sx={{width:"25%"}} onClick={()=>setBrandDialog(true)}>
                         Add new Brand
                     </Button>
                 </Stack>
@@ -79,16 +125,18 @@ function NewProductDialog({open,onClose}:props) {
                             labelId="category-label"
                             value={categoryId}
                             label="Category"
-                            onChange={(e) =>
-                                setCategoryId(Number(e.target.value))
-                            }
+                            onChange={(e) => setCategoryId(e.target.value)}
                         >
-                            <MenuItem value={10}>Shirts</MenuItem>
-                            <MenuItem value={20}>Shoes</MenuItem>
-                            <MenuItem value={30}>Pants</MenuItem>
+                            <MenuItem value="">
+                                <em>Select Category</em>
+                            </MenuItem>
+
+                            {allCategory.map((category: Category) => (
+                                <MenuItem value={String(category.id)}>{category.name}</MenuItem>
+                            ))}
                         </Select>
                     </FormControl>
-                    <Button variant="outlined" sx={{width:"25%"}}>
+                    <Button variant="outlined" sx={{width:"25%"}} onClick={()=>setCategoryDialog(true)}>
                         Add new Category
                     </Button>
                 </Stack>
@@ -179,10 +227,14 @@ function NewProductDialog({open,onClose}:props) {
                     Close
                 </Button>
 
-                <Button variant="contained">
+                <Button variant="contained" onClick={addProduct}>
                     Create product
                 </Button>
             </DialogActions>
+
+            <BrandDialog open={brandDialog} onClose={()=>setBrandDialog(false)} loadBrand={loadBrands}/>
+            <CategoryDialog open={categoryDialog} onClose={()=>setCategoryDialog(false)} loadCategory={loadCategories}/>
+
         </Dialog>
     );
 }

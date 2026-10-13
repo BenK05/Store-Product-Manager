@@ -8,14 +8,22 @@ export type Product = {
     state:string;
 }
 
-export type Variant={
-    sku:string;
-    size:string;
-    color:string;
-    price:number;
-    barcode:string;
-    stock:number;
+export type Variant= {
+    sku: string;
+    size: string;
+    color: string;
+    price: number;
+    barcode: string;
+    stock: number;
+}
+export type Brand = {
+    id: number;
+    name: string;
+}
 
+export type Category = {
+    id: number;
+    name: string;
 }
 
 export type NewProduct={
